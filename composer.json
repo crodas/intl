@@ -1,0 +1,22 @@
+{
+    "name": "root/intl",
+    "description": "easy internationalization support for PHP",
+    "require": {
+        "symfony/finder": "*",
+        "crodas/cli": "*",
+        "symfony/yaml": "*"
+    },
+    "license": "BSD-4-Clause",
+    "authors": [
+        {
+            "name": "César D. Rodas",
+            "email": "crodas@php.net"
+        }
+    ],
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-0": {
+            "crodas": "lib/"
+        }
+    }
+}
