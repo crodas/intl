@@ -91,7 +91,7 @@ class Intl
         self::$data = !empty(self::$datas[$lang]) ? self::$datas[$lang] : [];
     }
 
-    public function _($args)
+    public static function _($args)
     {
         if (!empty(self::$data[$args[0]])) {
             $args[0] =  self::$data[$args[0]];
