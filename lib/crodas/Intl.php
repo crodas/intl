@@ -96,6 +96,9 @@ class Intl
         if (!empty(self::$data[$args[0]])) {
             $args[0] =  self::$data[$args[0]];
         }
+        if (count($args) == 1) {
+            return $args[0];
+        }
         return call_user_func_array('sprintf', $args);
     }
 }
