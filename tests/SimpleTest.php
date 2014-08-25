@@ -1,6 +1,7 @@
 <?php
 
 use crodas\Intl;
+use crodas\Intl\Parser\YML;
 
 class SimpleTest extends \phpunit_framework_testcase
 {
@@ -14,7 +15,7 @@ class SimpleTest extends \phpunit_framework_testcase
     public function testScanner()
     {
         Intl::init("/tmp/languages.php", "es");
-        Intl::build(__DIR__, __DIR__ . "/intl");
+        Intl::build(__DIR__, new YML(__DIR__ . "/intl"));
         $this->assertEquals(1, count(glob(__DIR__. "/intl/*.yml")));
         $this->assertTrue(is_file(__DIR__. "/intl/template.yml"));
     }
@@ -22,8 +23,9 @@ class SimpleTest extends \phpunit_framework_testcase
     public function testCompile()
     {
         copy(__DIR__ . "/es1.yml", __DIR__ . "/intl/es.yml");
-        Intl::build(__DIR__, __DIR__ . "/intl");
-        Intl::compile(__DIR__ . "/intl");
+        $parser = new YML(__DIR__ . "/intl");
+        Intl::build(__DIR__, $parser);
+        Intl::compile($parser);
         $this->assertEquals(__("Hi %s, welcome", "crodas"), "Hola crodas, bienvenido");
     }
 
@@ -35,8 +37,9 @@ class SimpleTest extends \phpunit_framework_testcase
     public function testCompileAppend()
     {
         copy(__DIR__ . "/es2.yml", __DIR__ . "/intl/es.yml");
-        Intl::build(__DIR__, __DIR__ . "/intl");
-        Intl::compile(__DIR__ . "/intl");
+        $parser = new YML(__DIR__ . "/intl");
+        Intl::build(__DIR__, $parser);
+        Intl::compile($parser);
         $text = "Hi %s, welcome!"; 
         $this->assertEquals(__($text, "crodas"), "Hola crodas, bienvenido!");
         $this->assertEquals(__("Hi %s, welcome", "crodas"), "Hi crodas, welcome"); // we dont have this definition

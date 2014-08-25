@@ -37,39 +37,40 @@
 namespace crodas;
 
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Yaml\Parser;
+use crodas\Intl\Parser\Base;
 
 require __DIR__ . "/Intl/alias.php";
 
 
 class Intl
 {
-    static $datas = [];
-    static $lang;
-    static $data;
-    static $file;
+    static protected $datas = [];
+    static protected $lang;
+    static protected $data;
+    static protected $file;
 
-    public static function build($path, $outdir)
+    public static function build($path, Base $parser)
     {
         if (!($path instanceof Finder)) {
             $finder = new Finder;
             $finder->files()->name("/\.(php|phtml|tpl|html|js)$/")->in($path);
             $path = $finder;
         }
-        $scanner = new Intl\Scanner($finder);
+        $scanner = new Intl\Scanner($finder, $parser);
         $texts   = $scanner->scan();
-        if (!is_dir($outdir)) {
-            mkdir($outdir);
+        $texts   = array_combine($texts, array_fill(0, count($texts), ''));
+        foreach ($parser->getLocales() as $locale) {
+            $saved = $parser->get($locale);
+            $parser->store($locale, array_merge($texts, $saved));
         }
-        $scanner->dump($outdir, array_combine($texts, $texts));
+        $parser->store('template', $texts);
     }
 
-    public static function compile($dir)
+    public static function compile(Base $parser)
     {
-        $parser = new Parser;
         $data   = [];
-        foreach (glob("$dir/*.yml") as $file) {
-            $data[ substr(basename($file), 0, -4) ] = $parser->parse(file_get_contents($file));
+        foreach ($parser->getLocales() as $locale) {
+            $data[$locale] = $parser->get($locale);
         }
         file_put_contents(self::$file, "<?php return " . var_export($data, true) . ";");
         self::init(self::$file, self::$lang);

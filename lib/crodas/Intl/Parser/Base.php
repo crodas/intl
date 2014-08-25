@@ -34,48 +34,16 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
-namespace crodas\intl;
+namespace crodas\Intl\Parser;
 
-use Symfony\Component\Finder\Finder;
-
-class Scanner
+interface Base
 {
-    protected $finder;
+    public function __construct($path);
 
-    public function __construct(Finder $finder)
-    {
-        $this->finder = $finder;
-    }
+    public function store($locale, Array $data);
 
-    public function findPatterns($file, Array &$texts)
-    {
-        $content = file_get_contents($file);
-        $length  = strlen($content);
-        preg_match_all("/((?:_|__|_e)\s*\(\s*[\"\'])/", $content, $matches);
-        foreach (array_unique($matches[1]) as $pattern) {
-            $offset = 0;
-            $len    = strlen($pattern);
-            while ( ($pos=strpos($content, $pattern, $offset)) !== FALSE ) {
-                $end = $content[$pos+$len-1];
-                for ($i = $pos + $len; $i < $length && $content[$i] != $end; ++$i) {
-                    if ($content[$i] == "\\") ++$i;
-                }
-                $texts[] = stripslashes(substr($content, $pos + $len, $i - $pos - $len));
-                $offset = $i;
-            }
-        }
-        $texts = array_unique($texts);
-    }
+    public function get($locale);
 
-    public function scan()
-    {
-        $texts = [];
-        foreach ($this->finder as $file) {
-            $ttl  = filemtime($file);
-            $this->findPatterns($file, $texts);
-        }
-        sort($texts);
-        return $texts;
-    }
+    public function getLocales();
 }
 

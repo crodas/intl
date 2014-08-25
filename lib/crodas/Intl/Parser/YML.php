@@ -34,48 +34,41 @@
   | Authors: César Rodas <crodas@php.net>                                           |
   +---------------------------------------------------------------------------------+
 */
-namespace crodas\intl;
+namespace crodas\Intl\Parser;
 
-use Symfony\Component\Finder\Finder;
+use Symfony\Component\Yaml\Dumper;
+use Symfony\Component\Yaml\Parser;
 
-class Scanner
+class YML implements Base
 {
-    protected $finder;
+    protected $path;
 
-    public function __construct(Finder $finder)
+    public function __construct($path)
     {
-        $this->finder = $finder;
+        $this->path = $path;
     }
 
-    public function findPatterns($file, Array &$texts)
+    public function store($locale, Array $data)
     {
-        $content = file_get_contents($file);
-        $length  = strlen($content);
-        preg_match_all("/((?:_|__|_e)\s*\(\s*[\"\'])/", $content, $matches);
-        foreach (array_unique($matches[1]) as $pattern) {
-            $offset = 0;
-            $len    = strlen($pattern);
-            while ( ($pos=strpos($content, $pattern, $offset)) !== FALSE ) {
-                $end = $content[$pos+$len-1];
-                for ($i = $pos + $len; $i < $length && $content[$i] != $end; ++$i) {
-                    if ($content[$i] == "\\") ++$i;
-                }
-                $texts[] = stripslashes(substr($content, $pos + $len, $i - $pos - $len));
-                $offset = $i;
-            }
+        $dumper = new Dumper();
+        $yaml = $dumper->dump($data, 2);
+        file_put_contents("{$this->path}/{$locale}.yml", $yaml);
+    }
+
+    public function get($locale)
+    {
+        $parser = new Parser;
+        return $parser->parse(file_get_contents("{$this->path}/{$locale}.yml"));
+    }
+
+    public function getLocales()
+    {
+        $locales = [];
+        foreach (glob("{$this->path}/*.yml") as $file) {
+            $locales[] = substr(basename($file), 0, -4);
         }
-        $texts = array_unique($texts);
+        return $locales;
     }
 
-    public function scan()
-    {
-        $texts = [];
-        foreach ($this->finder as $file) {
-            $ttl  = filemtime($file);
-            $this->findPatterns($file, $texts);
-        }
-        sort($texts);
-        return $texts;
-    }
 }
 
