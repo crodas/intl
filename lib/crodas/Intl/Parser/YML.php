@@ -45,6 +45,9 @@ class YML implements Base
 
     public function __construct($path)
     {
+        if (!is_dir($path)  && !mkdir($path)) {
+            throw new \RuntimeException("Cannot create directory {$path}");
+        }
         $this->path = $path;
     }
 
